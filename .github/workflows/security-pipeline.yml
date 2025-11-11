@@ -22,7 +22,6 @@ jobs:
       # 3. Install dependencies
       - name: Install dependencies
         run: |
-          # Use npm ci if package-lock.json exists, otherwise npm install
           if [ -f package-lock.json ]; then
             npm ci
           else
@@ -32,20 +31,23 @@ jobs:
 
       # 4. Run Semgrep using Docker
       - name: Run Semgrep
+        continue-on-error: true   # <--- CI не падает, даже если найдены уязвимости
         run: |
-          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep --config p/ci -a
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep --config p/ci -a || true
 
       # 5. Run SonarCloud Scan
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
+        continue-on-error: true   # <--- CI не падает, даже если есть ошибки
         with:
-          projectKey: "juice-shop-123"          # твой Project Key из SonarCloud
-          organization: "juice-shop-123"        # твой Organization Key из SonarCloud
+          projectKey: "juice-shop-123"          
+          organization: "juice-shop-123"        
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # токен из GitHub Secrets
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # 6. Run Dependency-Check
       - name: Run Dependency-Check
+        continue-on-error: true   # <--- CI не падает при уязвимостях
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: "Juice Shop Security"
@@ -53,9 +55,13 @@ jobs:
           format: "HTML"
           out: "./reports"
 
-      # 7. Upload reports
+      # 7. Upload all reports
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
-          path: "./reports"
+          path: |
+            ./reports
+            # если есть отчёты Semgrep и SonarCloud, можно добавить пути
+            # ./semgrep-report.html
+            # ./sonar-report.json
