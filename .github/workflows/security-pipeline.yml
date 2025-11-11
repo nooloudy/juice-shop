@@ -9,17 +9,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: |
-          # Use npm install instead of npm ci if package-lock.json is missing
+          # Use npm ci if package-lock.json exists, otherwise npm install
           if [ -f package-lock.json ]; then
             npm ci
           else
@@ -27,18 +30,18 @@ jobs:
           fi
           npm install -g nyc
 
+      # 4. Run Semgrep using Docker (самый стабильный вариант)
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v2  
-        with:
-          config: "p/ci"
-          args: --all-files 
-          continue-on-error: false 
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep --config p/ci --all-files
 
+      # 5. Run SonarCloud Scan
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      # 6. Run Dependency-Check
       - name: Run Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
@@ -47,6 +50,7 @@ jobs:
           format: "HTML"
           out: "./reports"
 
+      # 7. Upload reports
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
