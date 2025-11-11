@@ -18,7 +18,9 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm ci
+          npm install -g nyc
 
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
@@ -33,12 +35,13 @@ jobs:
       - name: Run Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
-          project: "MyApp"
+          project: "Juice Shop Security"
           path: "."
           format: "HTML"
+          out: "./reports"
 
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
-          path: "**/dependency-check-report.html"
+          path: "./reports"
