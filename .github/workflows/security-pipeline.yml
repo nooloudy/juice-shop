@@ -39,10 +39,10 @@ jobs:
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
-          projectKey: "juice-shop-123"          
-          organization: "juice-shop-123"           
+          projectKey: "juice-shop-123"          # твой Project Key из SonarCloud
+          organization: "juice-shop-123"        # твой Organization Key из SonarCloud
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # токен из GitHub Secrets
 
       # 6. Run Dependency-Check
       - name: Run Dependency-Check
