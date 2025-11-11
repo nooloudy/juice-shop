@@ -30,10 +30,10 @@ jobs:
           fi
           npm install -g nyc
 
-      # 4. Run Semgrep using Docker (самый стабильный вариант)
+      # 4. Run Semgrep using Docker
       - name: Run Semgrep
         run: |
-          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep --config p/ci --all-files
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep --config p/ci -a
 
       # 5. Run SonarCloud Scan
       - name: Run SonarCloud Scan
